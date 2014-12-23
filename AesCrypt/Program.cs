@@ -175,14 +175,14 @@ namespace AesCrypt
                         }
                         long dataLength = BitConverter.ToInt64(dataLengthBits, 0);
 
-                        string outputFileName = Path.GetFileName(fileName);
+                        string outputFileName = Path.Combine(Directory.GetCurrentDirectory(), Path.GetFileName(fileName));
                         if (File.Exists(outputFileName))
                         {
                             Console.Error.WriteLine("ERROR: '{0}' already exists, exiting", outputFileName);
                             return;
                         }
 
-                        Console.Out.WriteLine("Decrypting '{0}', {1:N0} bytes", fileName, dataLength);
+                        Console.Out.WriteLine("Decrypting what was originally called '{0}' ({1:N0} bytes)", fileName, dataLength);
                         byte[] decryptedHash;
                         long totalRead = 0;
                         using (FileStream outputStream = new FileStream(outputFileName, FileMode.CreateNew, FileAccess.Write, FileShare.Read))
@@ -211,16 +211,15 @@ namespace AesCrypt
                         }
 
                         byte[] originalHashBits = new byte[64];
-                        int wtf;
-                        if ((wtf = cs.Read(originalHashBits, 0, originalHashBits.Length)) != originalHashBits.Length)
+                        if (cs.Read(originalHashBits, 0, originalHashBits.Length) != originalHashBits.Length)
                         {
-                            Console.Error.WriteLine("ERROR: Failed reading verification hash {0} vs 64", wtf);
+                            Console.Error.WriteLine("ERROR: Failed reading verification hash, encrypted file is corrupted!");
                             return;
                         }
 
                         if (originalHashBits.SequenceEqual(decryptedHash))
                         {
-                            Console.Out.WriteLine("Decrypted '{0}'", outputFileName);
+                            Console.Out.WriteLine("Successfully decrypted '{0}'", outputFileName);
                         }
                         else
                         {
